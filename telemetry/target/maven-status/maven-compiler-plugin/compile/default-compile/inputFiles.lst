@@ -1,0 +1,12 @@
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/TelemetryApplication.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/api/IngestionController.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/api/dto/CollectResponse.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/api/dto/ErrorDetail.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/api/dto/EventDTO.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/service/EventValidator.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/service/IngestionService.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/service/validation/BaseEventTypeValidator.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/service/validation/ClickValidator.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/service/validation/EventTypeValidator.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/service/validation/PageEndValidator.java
+/Users/matheus/telemetry/src/main/java/com/acme/telemetry/service/validation/PageStartValidator.java
