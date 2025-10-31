@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <title>Teledata • Página de Teste</title>
+  <style>
+    body{font-family:Arial, sans-serif; margin:24px; line-height:1.4}
+    .row{margin-bottom:10px}
+    input{padding:6px 8px; margin-right:8px}
+    button{padding:8px 12px; margin:6px 8px 6px 0; cursor:pointer}
+    small{color:#666}
+    .box{border:1px solid #ddd; padding:12px; border-radius:8px; margin-top:12px}
+  </style>
+</head>
+<body>
+  <h1>Teledata • Página de Teste</h1>
+  <p>Use esta página para <b>gerar eventos</b> de exemplo (click / page_start / page_end) e validar a coleta.</p>
+
+  <div class="box">
+    <div class="row">
+      <label>siteKey <input id="siteKey" value="sk_dev"></label>
+      <label>userId <input id="userId" value="u1"></label>
+      <label>sessionId <input id="sessionId" value="s1"></label>
+      <label>pvId <input id="pvId" value="pv1"></label>
+    </div>
+    <div class="row">
+      <button onclick="sendPageStart()">Enviar page_start</button>
+      <button onclick="sendPageEnd()">Enviar page_end</button>
+      <small>O page_end usa a duração desde o último page_start.</small>
+    </div>
+    <div class="row">
+      <button onclick="sendClick('btn_buy')">Click: Comprar</button>
+      <button onclick="sendClick('btn_add_to_cart')">Click: Add ao carrinho</button>
+      <button onclick="sendClick('btn_help')">Click: Ajuda</button>
+      <small>Cada botão envia <code>properties.element_key</code> diferente.</small>
+    </div>
+    <div class="row">
+      <button onclick="openSummary()">Abrir Summary</button>
+      <small>Abre <code>/v1/metrics/summary?siteKey=...</code> em outra aba.</small>
+    </div>
+    <div id="last" class="row"></div>
+  </div>
+
+  <script>
+    // estado simples para medir a duração da página
+    let pageStartAtMs = null;
+
+    // util: gera ids curtos
+    const rid = () => 'e-' + Math.random().toString(36).slice(2,8);
+
+    // util: pega valores do formulário
+    function readCtx(){
+      return {
+        siteKey: document.getElementById('siteKey').value.trim(),
+        userId: document.getElementById('userId').value.trim(),
+        sessionId: document.getElementById('sessionId').value.trim(),
+        pvId: document.getElementById('pvId').value.trim(),
+        url: window.location.href
+      };
+    }
+
+    // envia 1 evento no formato da API (array com 1 item)
+    async function sendEvent(evt){
+      try{
+        const res = await fetch('/v1/collect', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify([evt])
+        });
+        const data = await res.json();
+        showLast(`HTTP ${res.status} -> ${JSON.stringify(data)}`);
+      }catch(err){
+        showLast('Erro ao enviar: ' + err);
+      }
+    }
+
+    // monta evento base comum
+    function baseEvent(type){
+      const c = readCtx();
+      return {
+        event_id: rid(),
+        site_key: c.siteKey,
+        type: type,
+        timestamp: new Date().toISOString(),
+        user: { user_id: c.userId },
+        session_id: c.sessionId,
+        pv_id: c.pvId,
+        context: { url: c.url },
+        properties: {}
+      };
+    }
+
+    // envia click com element_key
+    function sendClick(elementKey){
+      const evt = baseEvent('click');
+      evt.properties = { element_key: elementKey };
+      sendEvent(evt);
+    }
+
+    // envia page_start e marca o início
+    function sendPageStart(){
+      pageStartAtMs = Date.now();
+      const evt = baseEvent('page_start');
+      sendEvent(evt);
+    }
+
+    // envia page_end calculando duration_ms desde o último start
+    function sendPageEnd(){
+      const now = Date.now();
+      const duration = pageStartAtMs ? Math.max(0, now - pageStartAtMs) : 0;
+      const evt = baseEvent('page_end');
+      evt.properties = { duration_ms: duration };
+      sendEvent(evt);
+      pageStartAtMs = null; // zera marcador
+    }
+
+    function openSummary(){
+      const siteKey = document.getElementById('siteKey').value.trim();
+      window.open(`/v1/metrics/summary?siteKey=${encodeURIComponent(siteKey)}`, '_blank');
+    }
+
+    function showLast(msg){
+      const el = document.getElementById('last');
+      el.textContent = 'Última resposta: ' + msg;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <title>Teledata • Métricas</title>
+  <style>
+    body{font-family:Arial, sans-serif; margin:24px;}
+    h1{margin-bottom:8px}
+    code{background:#f2f2f2; padding:2px 6px; border-radius:4px}
+    table{border-collapse:collapse; margin-top:8px}
+    th,td{border:1px solid #ddd; padding:6px 10px}
+  </style>
+</head>
+<body>
+  <h1>Resumo de Métricas</h1>
+  <label>siteKey: <input id="siteKey" value="sk_dev"></label>
+  <button onclick="load()">Atualizar</button>
+
+  <h2>Cliques</h2>
+  <table id="tblClicks"><thead><tr><th>elementKey</th><th>total</th></tr></thead><tbody></tbody></table>
+
+  <h2>Sessões</h2>
+  <table id="tblSessions"><thead><tr><th>pvId</th><th>totalMs</th><th>count</th><th>avgMs</th></tr></thead><tbody></tbody></table>
+
+  <script>
+    async function load(){
+      const siteKey = document.getElementById('siteKey').value;
+      const res = await fetch(`/v1/metrics/summary?siteKey=${encodeURIComponent(siteKey)}`);
+      const data = await res.json();
+      const bc = document.querySelector('#tblClicks tbody'); bc.innerHTML = '';
+      data.clicks.forEach(c=>{
+        bc.insertAdjacentHTML('beforeend', `<tr><td>${c.elementKey}</td><td>${c.total}</td></tr>`);
+      });
+      const bs = document.querySelector('#tblSessions tbody'); bs.innerHTML = '';
+      data.sessions.forEach(s=>{
+        bs.insertAdjacentHTML('beforeend', `<tr><td>${s.pvId}</td><td>${s.totalMs}</td><td>${s.count}</td><td>${s.avgMs}</td></tr>`);
+      });
+    }
+    load();
+    setInterval(load, 3000); // atualiza a cada 3s
+  </script>
+</body>
+</html>
